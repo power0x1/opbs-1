@@ -207,7 +207,14 @@ export interface AnalysisDayRow {
   tone: 'win' | 'loss';
   width: string;
   open?: boolean;
-  tradeRows: { ticker: string; title: string; pnl: string; tone: 'win' | 'loss' }[];
+  tradeRows: {
+    ticker: string;
+    title: string;
+    pnl: string;
+    tone: 'win' | 'loss';
+    source?: string;
+    type?: string;
+  }[];
 }
 
 export interface WatchItem {

@@ -58,9 +58,18 @@ export function PortfolioProvider({ children }: PortfolioProviderProps) {
     const summary = computePortfolioSummary(openOptions, stockPositions);
 
     const allPnl: number[] = [
-      ...allFnoTrades.map((t: FnoTrade) => t.potentialReturns?.value ?? 0),
+      ...allFnoTrades.map((t: FnoTrade) => {
+        const isProfit = t.returns?.isProfit ?? ((t.returns?.value ?? 0) >= 0);
+        const raw = Math.abs(t.returns?.value ?? t.potentialReturns?.value ?? 0);
+        return isProfit ? raw : -raw;
+      }),
       ...coinbaseOptions.map((t: CoinbaseTrade) => t.runtimePnl ?? 0),
       ...coinbaseStocks.map((t: CoinbaseTrade) => t.runtimePnl ?? 0),
+      ...activeTrades.map((t: ActiveTrade) => {
+        const entry = t.entryStartPrice || t.entryEndPrice || 0;
+        const ltp = t.entryEndPrice || t.entryStartPrice || 0;
+        return t.investedValue && entry > 0 ? ((ltp - entry) / entry) * t.investedValue : 0;
+      }),
     ];
     const netPnl = allPnl.reduce((sum, p) => sum + p, 0);
     const totalTrades = allPnl.length;

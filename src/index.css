@@ -60,15 +60,17 @@ h1 { margin: 0; font: 700 29px/1.12 'Space Grotesk', sans-serif; letter-spacing:
 .count-badge { display: inline-grid; place-items: center; min-width: 24px; height: 22px; padding: 0 5px; margin-left: 7px; border-radius: 10px; color: #8994a9; background: #212120; font-size: 12px; }
 .selected .count-badge { background: #5a2e18; color: #ff7a3d; }
 .hero-card, .archive-summary { border: 1px solid #2d2a24; border-radius: 25px; overflow: hidden; margin-bottom: 28px; background: linear-gradient(130deg, #1a1410, #1a1612); box-shadow: 0 18px 35px rgba(0,0,0,.18); }
-.positive-card { border-color: #4a2a18; background: linear-gradient(130deg, #1a1410 18%, #1a1612 100%); }
+.positive-card { border-color: #166534; background: linear-gradient(130deg, #0d2216 18%, #121a15 100%); box-shadow: 0 18px 35px rgba(0,0,0,.25), 0 0 24px rgba(34,197,94,0.06); }
+.loss-card { border-color: #7f1d1d; background: linear-gradient(130deg, #230d11 18%, #1a1214 100%); box-shadow: 0 18px 35px rgba(0,0,0,.25), 0 0 24px rgba(239,68,68,0.06); }
 .closed-card { background: #1a1a18; border-color: #2d2a24; }
 .hero-grid { display: flex; justify-content: space-between; gap: 18px; padding: 28px 26px 23px; }
 .eyebrow { display: flex; align-items: center; gap: 7px; margin: 0 0 9px; color: #a2acc1; font-size: 12px; letter-spacing: .07em; font-weight: 500; }
 .hero-value { font: 700 34px/1.05 'Space Grotesk', sans-serif; letter-spacing: -.05em; white-space: nowrap; }
-.positive, .win { color: #ff7a3d !important; }
-.loss { color: #ff6576 !important; }
+.positive, .win { color: #22c55e !important; }
+.loss { color: #ef4444 !important; }
 .hero-detail { display: flex; align-items: center; gap: 9px; color: #9da8bd; font-size: 13px; margin-top: 10px; }
-.gain-chip { background: #42281a; color: #ff9d5c; padding: 3px 7px; border-radius: 4px; font-weight: 700; }
+.gain-chip { background: #0c2b18; color: #4ade80; padding: 3px 7px; border-radius: 4px; font-weight: 700; border: 1px solid #166534; }
+.loss-chip { background: #2e1014; color: #f87171; padding: 3px 7px; border-radius: 4px; font-weight: 700; border: 1px solid #7f1d1d; }
 .capital-box { flex: none; min-width: 160px; align-self: flex-start; padding: 15px 16px; border-radius: 16px; background: rgba(5,4,3,.45); }
 .capital-box span, .capital-box small { display: block; color: #aab4c7; font-size: 12px; }
 .capital-box strong { display: block; margin: 8px 0; font: 600 20px 'Space Grotesk', sans-serif; white-space: nowrap; }
@@ -112,8 +114,8 @@ h1 { margin: 0; font: 700 29px/1.12 'Space Grotesk', sans-serif; letter-spacing:
 .value span, .value small { display: block; color: #aab5c9; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .value strong { display: block; margin: 6px 0 4px; color: #f5f6f9; font: 600 16px 'Space Grotesk', sans-serif; white-space: nowrap; }
 .value small { color: #9aa5ba; }
-.value small.win { color: #ff7a3d; }
-.value small.loss { color: #ff6576; }
+.value small.win { color: #22c55e; }
+.value small.loss { color: #ef4444; }
 .card-actions { display: flex; gap: 12px; padding: 20px 22px 21px; }
 .source-badge { flex: none; margin-left: auto; display: inline-flex; align-items: center; gap: 5px; border-radius: 7px; padding: 4px 9px; font-size: 11px; font-weight: 600; line-height: 1.2; letter-spacing: .04em; }
 .source-badge.liquide { color: #ff7a3d; background: #3a2014; border: 1px solid #8a4520; }
@@ -142,12 +144,12 @@ h1 { margin: 0; font: 700 29px/1.12 'Space Grotesk', sans-serif; letter-spacing:
 .card-actions button:hover { border-color: #ff7a3d; color: #ff7a3d; }
 .card-actions .danger-action { border-color: #7b303c; color: #ff7784; background: rgba(116,27,43,.22); }
 .closed-badge { flex: none; border: 1px solid #50515c; border-radius: 7px; padding: 4px 9px; color: #d2d3dc; background: #2c2d30; font-size: 11px; font-weight: 600; line-height: 1.2; letter-spacing: .04em; }
-.closed-badge.win { border-color: #8a4520; color: #ff7a3d; background: #3a2014; }
-.closed-badge.loss { border-color: #80353e; color: #ff6675; background: #42242d; }
+.closed-badge.win { border-color: #166534; color: #22c55e; background: #0c2114; }
+.closed-badge.loss { border-color: #7f1d1d; color: #ef4444; background: #261014; }
 .advised { display: flex; align-items: center; gap: 7px; min-height: 38px; padding: 0 22px; border-top: 1px solid #292824; color: #a7adbd; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .advised span { display: flex; align-items: center; gap: 4px; margin-left: auto; }
-.advised b { margin-left: auto; flex: none; padding: 5px 8px; border: 1px solid #8a4520; border-radius: 7px; color: #ff7a3d; font-size: 11px; font-weight: 500; }
-.advised b.loss { border-color: #5e3540; color: #d99ba1; background: #2c242b; }
+.advised b { margin-left: auto; flex: none; padding: 5px 8px; border: 1px solid #166534; border-radius: 7px; color: #22c55e; font-size: 11px; font-weight: 500; background: #0c2114; }
+.advised b.loss { border-color: #7f1d1d; color: #ef4444; background: #261014; }
 .history-heading { margin-top: 4px; }
 .history-heading h2 { display: flex; align-items: center; gap: 8px; font-size: 15px; }
 .history-heading > span { color: #c1c2ca; font-size: 13px; }
@@ -176,32 +178,71 @@ h1 { margin: 0; font: 700 29px/1.12 'Space Grotesk', sans-serif; letter-spacing:
 .metric-large strong { font-size: 26px; margin-top: 24px; }
 .metric-large small { color: #a9b2c5; font-size: 13px; }
 .analysis-metrics + .segment { margin-top: 0; }
+.range-selector { display: inline-flex; align-items: center; padding: 3px; background: #141310; border: 1px solid #282520; border-radius: 14px; gap: 3px; }
+.range-pill { border: 0; background: transparent; color: #8e99ac; font-size: 13px; font-weight: 600; padding: 6px 14px; border-radius: 10px; cursor: pointer; transition: all .2s ease; user-select: none; }
+.range-pill:hover:not(.active) { color: #f0f3f8; background: rgba(255,255,255,.04); }
+.range-pill.active { background: #26241f; color: #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,.35), inset 0 0 0 1px #3f3a30; }
+
+.filter-trigger-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 38px;
+  padding: 6px 14px;
+  background: #141310;
+  border: 1px solid #282520;
+  border-radius: 14px;
+  color: #8e99ac;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .2s ease;
+  user-select: none;
+}
+.filter-trigger-btn:hover {
+  color: #f0f3f8;
+  border-color: #3d3930;
+  background: #1b1915;
+}
+.filter-trigger-btn.active {
+  color: #ff7a3d;
+  border-color: #8a4520;
+  background: #251811;
+  box-shadow: 0 2px 8px rgba(255,122,61,.2);
+}
+
+.source-tag.fno { background: #1f1a26; color: #c4b5fd; border-color: #3b2d54; }
+.source-tag.coinbase { background: #141f2d; color: #93c5fd; border-color: #1e3a5f; }
+.source-tag.liquide { background: #14231b; color: #86efac; border-color: #1d432b; }
 .day-list { overflow: hidden; border: 1px solid #252220; border-radius: 23px; background: #141310; }
-.day-row { border-bottom: 1px solid #232018; }
+.day-row { border-bottom: 1px solid #232018; transition: background .15s ease; }
 .day-row:last-child { border-bottom: 0; }
-.day-summary { display: flex; justify-content: space-between; align-items: center; gap: 12px; min-height: 108px; padding: 20px 22px; }
-.day-summary > div:first-child { min-width: 160px; }
+.day-summary { display: flex; justify-content: space-between; align-items: center; gap: 12px; min-height: 100px; padding: 20px 22px; cursor: pointer; transition: background .15s ease; }
+.day-summary:hover { background: rgba(255,255,255,.02); }
+.day-summary > div:first-child { min-width: 150px; }
 .day-summary strong, .day-summary span { display: block; }
-.day-summary strong { font: 600 17px 'Space Grotesk', sans-serif; }
-.day-summary span { color: #a0a9bb; font-size: 14px; margin-top: 5px; }
-.day-result { display: grid; grid-template-columns: minmax(75px, 1fr) auto auto; align-items: center; gap: 10px; min-width: 48%; }
-.day-bar { height: 6px; background: #1d1a14; border-radius: 6px; overflow: hidden; }
-.day-bar span { display: block; height: 100%; border-radius: inherit; background: #ff7a3d; }
-.day-bar span.loss { background: #ff5670 !important; }
-.day-result b { min-width: 86px; text-align: right; font: 600 17px 'Space Grotesk', sans-serif; white-space: nowrap; }
-.day-result svg { color: #9aa6ba; transition: .2s; }
+.day-summary strong { font: 600 16px 'Space Grotesk', sans-serif; color: #f4f6fa; }
+.day-summary span { color: #9ea9bc; font-size: 13px; margin-top: 5px; }
+.day-result { display: grid; grid-template-columns: minmax(75px, 1fr) auto auto; align-items: center; gap: 12px; min-width: 48%; }
+.day-bar { height: 7px; background: #1e1c18; border-radius: 6px; overflow: hidden; }
+.day-bar span { display: block; height: 100%; border-radius: inherit; background: #22c55e; }
+.day-bar span.loss { background: #ef4444 !important; }
+.day-result b { min-width: 90px; text-align: right; font: 600 17px 'Space Grotesk', sans-serif; white-space: nowrap; }
+.day-result svg { color: #9aa6ba; transition: .2s ease; }
 .day-result svg.up { transform: rotate(180deg); }
-.day-trades { padding: 0 22px; background: #08070a; }
-.trade-row { display: flex; align-items: center; gap: 12px; min-height: 80px; border-bottom: 1px solid #181612; }
+.day-trades { padding: 0 22px; background: #0b0a0d; border-top: 1px solid #1c1a17; }
+.trade-row { display: flex; align-items: center; gap: 14px; min-height: 74px; border-bottom: 1px solid #181613; padding: 12px 0; cursor: pointer; }
 .trade-row:last-child { border: 0; }
-.mini-ticker { display: grid; place-items: center; width: 43px; height: 43px; flex: none; border: 1px solid #23508b; border-radius: 50%; background: #101d34; color: #47a8ff; font-weight: 700; font-size: 12px; }
-.mini-ticker.win { border-color: #613e7d; background: #271a35; color: #d89aff; }
-.mini-ticker.loss { border-color: #286098; background: #111f36; color: #4ba8ff; }
-.trade-row > div:nth-child(2) { min-width: 0; flex: 1; }
-.trade-row strong, .trade-row span { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.trade-row strong { font-size: 15px; }
-.trade-row span { color: #a2acc0; margin-top: 5px; font-size: 12px; }
-.trade-row b { flex: none; font: 600 16px 'Space Grotesk', sans-serif; }
+.trade-row:hover { opacity: .9; }
+.trade-info { min-width: 0; flex: 1; }
+.trade-info strong { display: block; font-size: 14px; font-weight: 600; color: #f3f5f9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.trade-sub { display: flex; align-items: center; gap: 7px; margin-top: 4px; font-size: 12px; color: #929db0; }
+.source-tag { display: inline-block; padding: 1px 6px; font-size: 10px; font-weight: 700; border-radius: 5px; background: #1e1c18; color: #9ea9bc; border: 1px solid #332f28; letter-spacing: .03em; }
+.mini-ticker { display: grid; place-items: center; width: 42px; height: 42px; flex: none; border: 1px solid #23508b; border-radius: 12px; background: #101d34; color: #47a8ff; font-weight: 700; font-size: 12px; font-family: 'Space Grotesk', sans-serif; }
+.mini-ticker.win { border-color: #166534; background: #0c2317; color: #4ade80; }
+.mini-ticker.loss { border-color: #7f1d1d; background: #260f13; color: #f87171; }
+.trade-row b { flex: none; font: 600 16px 'Space Grotesk', sans-serif; white-space: nowrap; }
+.trade-row svg { color: #5a6476; flex: none; }
 .search-box { display: flex; align-items: center; gap: 10px; margin: 21px 0 14px; padding: 0 13px; height: 48px; border: 1px solid #2a2a24; border-radius: 14px; background: #141210; color: #8490a5; }
 .search-box input { width: 100%; border: 0; outline: 0; color: #f0f3f8; background: transparent; }
 .search-box input::placeholder { color: #7f8a9d; }

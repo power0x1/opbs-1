@@ -38,9 +38,16 @@ export function AnalysisDayItem({ day, onAction }: AnalysisDayItemProps) {
               onClick={() => onAction(`${row.title} selected`)}
             >
               <div className={`mini-ticker ${row.tone}`}>{row.ticker}</div>
-              <div>
+              <div className="trade-info">
                 <strong>{row.title}</strong>
-                <span>{row.ticker}</span>
+                <div className="trade-sub">
+                  {row.source && (
+                    <span className={`source-tag ${row.source.toLowerCase()}`}>
+                      {row.source}
+                    </span>
+                  )}
+                  <span>{row.type || row.ticker}</span>
+                </div>
               </div>
               <b className={row.tone}>{row.pnl}</b>
               <ChevronRight size={17} />

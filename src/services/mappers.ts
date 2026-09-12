@@ -690,111 +690,271 @@ interface TradeEntry {
   ticker: string;
   title: string;
   pnl: number;
+  source?: string;
+  type?: string;
 }
 
-function fnoTradeDate(t: FnoTrade): Date {
-  if (t.advisedAt) {
-    const d = new Date(t.advisedAt);
+export function parseTradeDate(val?: string | number | null, fallbackDate?: string | number | null): Date {
+  if (!val && fallbackDate) return parseTradeDate(fallbackDate);
+  if (!val) return new Date(2026, 8, 11);
+  if (typeof val === 'number') {
+    const d = new Date(val);
     if (!isNaN(d.getTime())) return d;
   }
-  if (t.expiryDate) {
-    const d = new Date(t.expiryDate);
-    if (!isNaN(d.getTime())) return d;
+  const str = String(val).trim();
+  // Handle formats like "11 Sep '26 11:21 am"
+  const cleanStr = str.replace(/'(\d{2})/, (_m, y) => `20${y}`);
+  let d = new Date(cleanStr);
+  if (isNaN(d.getTime())) {
+    // Regex matching "11 Sep, 01:18 pm" or "Sep 11, 2:48 pm"
+    const match1 = str.match(/(\d{1,2})\s+([A-Za-z]{3})/i);
+    const match2 = str.match(/([A-Za-z]{3})\s+(\d{1,2})/i);
+    const months: Record<string, number> = {
+      jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5,
+      jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11,
+    };
+    if (match1) {
+      const day = parseInt(match1[1], 10);
+      const m = months[match1[2].toLowerCase()];
+      if (m !== undefined) {
+        d = new Date(2026, m, day);
+      }
+    } else if (match2) {
+      const m = months[match2[1].toLowerCase()];
+      const day = parseInt(match2[2], 10);
+      if (m !== undefined) {
+        d = new Date(2026, m, day);
+      }
+    }
   }
-  return new Date(0);
+  // Standard JS Date constructor defaults to year 2001 when string has no year (e.g. "11 Sep, 01:18 pm")
+  if (!isNaN(d.getTime()) && d.getFullYear() < 2020) {
+    d.setFullYear(2026);
+  }
+  return isNaN(d.getTime()) ? new Date(2026, 8, 11) : d;
 }
 
-function coinbaseTradeDate(t: CoinbaseTrade): Date {
-  if (t.createdAt) {
-    const d = new Date(t.createdAt);
-    if (!isNaN(d.getTime())) return d;
-  }
-  if (t.entryTime) {
-    const d = new Date(t.entryTime);
-    if (!isNaN(d.getTime())) return d;
-  }
-  return new Date(0);
-}
-
-function rangeKey(d: Date, range: AnalysisRange): string {
+function getRangeDetails(d: Date, range: AnalysisRange): { key: string; sortKey: number; label: string } {
   if (range === 'Day') {
-    return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
+    const dayStart = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    const dayName = d.toLocaleDateString('en-IN', { weekday: 'short' });
+    const formatted = d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+    return {
+      key: formatted,
+      sortKey: dayStart.getTime(),
+      label: `${dayName}, ${formatted}`,
+    };
   }
   if (range === 'Week') {
-    const start = new Date(d);
-    start.setDate(start.getDate() - start.getDay());
-    const end = new Date(start);
-    end.setDate(end.getDate() + 6);
-    return `${start.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })} – ${end.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}`;
-  }
-  return d.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
-}
+    const dCopy = new Date(d);
+    const dayOfWeek = (dCopy.getDay() + 6) % 7; // Monday = 0
+    const monday = new Date(dCopy);
+    monday.setDate(dCopy.getDate() - dayOfWeek);
+    monday.setHours(0, 0, 0, 0);
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+    sunday.setHours(23, 59, 59, 999);
 
-function rangeSortValue(d: Date, range: AnalysisRange): number {
-  if (range === 'Day') return d.getTime();
-  if (range === 'Week') {
-    const start = new Date(d);
-    start.setDate(start.getDate() - start.getDay());
-    return start.getTime();
+    const monStr = monday.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
+    const sunStr = sunday.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+    const formatted = `${monStr} – ${sunStr}`;
+    return {
+      key: formatted,
+      sortKey: monday.getTime(),
+      label: formatted,
+    };
   }
-  return new Date(d.getFullYear(), d.getMonth(), 1).getTime();
+  // Month
+  const monthStart = new Date(d.getFullYear(), d.getMonth(), 1);
+  const formatted = d.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+  return {
+    key: formatted,
+    sortKey: monthStart.getTime(),
+    label: formatted,
+  };
 }
 
 export function buildAnalysisDays(
   fnoTrades: FnoTrade[],
   coinbaseTrades: CoinbaseTrade[],
   range: AnalysisRange = 'Day',
+  _activeTrades?: ActiveTrade[],
+  allowedSources?: Set<string>,
 ): AnalysisDayRow[] {
   const entries: TradeEntry[] = [];
+  const isAll = !allowedSources || allowedSources.has('ALL');
+  const includeFno = isAll || allowedSources.has('FNO');
+  const includeCoinbase = isAll || allowedSources.has('COINBASE');
 
-  for (const t of fnoTrades) {
-    entries.push({
-      date: fnoTradeDate(t),
-      ticker: tickerFromSymbol(safeFnoScrip(t).symbol),
-      title: safeFnoScrip(t).symbol,
-      pnl: t.potentialReturns?.value ?? 0,
-    });
+  if (includeFno) {
+    for (const t of fnoTrades) {
+      // Exclude active trades - only closed/settled trades in analytics
+      const isClosed = Boolean(t.exitDate || t.returns || t.status === 'closed' || t.status === 'Closed' || t.status === 'settled' || t.status === 'Settled');
+      if (!isClosed || t.status === 'active' || t.status === 'Live') continue;
+
+      const date = parseTradeDate(t.exitDate || t.advisedAt, t.expiryDate);
+      const isProfit = t.returns?.isProfit ?? ((t.returns?.value ?? 0) >= 0);
+      const raw = Math.abs(t.returns?.value ?? t.potentialReturns?.value ?? 0);
+      const pnl = isProfit ? raw : -raw;
+      const symbol = safeFnoScrip(t).symbol;
+      entries.push({
+        date,
+        ticker: tickerFromSymbol(symbol),
+        title: symbol,
+        pnl,
+        source: 'FNO',
+        type: 'Settled Option',
+      });
+    }
   }
 
-  for (const t of coinbaseTrades) {
-    entries.push({
-      date: coinbaseTradeDate(t),
-      ticker: tickerFromSymbol(t.symbol ?? ''),
-      title: t.symbol ?? '',
-      pnl: t.runtimePnl ?? 0,
-    });
+  if (includeCoinbase) {
+    for (const t of coinbaseTrades) {
+      // Exclude active trades - only closed/exited trades in analytics
+      const isClosed = Boolean(t.exited || t.status === 'closed' || t.status === 'Exited' || t.ExitTime || t.exitPrice || t.EPrices);
+      if (!isClosed) continue;
+
+      const date = parseTradeDate(t.ExitTime || t.exitTime || t.closedAt || t.createdAt || t.entryTime);
+      const pnl = t.runtimePnl ?? 0;
+      const title = t.name || t.symbol || 'Trade';
+      const ticker = tickerFromSymbol(t.symbol || t.name || '');
+      entries.push({
+        date,
+        ticker,
+        title,
+        pnl,
+        source: 'COINBASE',
+        type: t.optionType ? 'Settled Option' : 'Exited Stock',
+      });
+    }
   }
 
-  const groups = new Map<string, { sortKey: number; pnl: number; count: number; rows: AnalysisDayRow['tradeRows'] }>();
+  // Active trades are not included in Analytics
+
+  const groups = new Map<
+    string,
+    {
+      sortKey: number;
+      label: string;
+      pnl: number;
+      count: number;
+      wins: number;
+      losses: number;
+      rows: AnalysisDayRow['tradeRows'];
+    }
+  >();
 
   for (const e of entries) {
-    const key = rangeKey(e.date, range);
-    const sortKey = rangeSortValue(e.date, range);
-    const existing = groups.get(key) ?? { sortKey, pnl: 0, count: 0, rows: [] };
+    const { key, sortKey, label } = getRangeDetails(e.date, range);
+    const existing = groups.get(key) ?? {
+      sortKey,
+      label,
+      pnl: 0,
+      count: 0,
+      wins: 0,
+      losses: 0,
+      rows: [],
+    };
     existing.pnl += e.pnl;
     existing.count += 1;
+    if (e.pnl > 0) existing.wins += 1;
+    else if (e.pnl < 0) existing.losses += 1;
+
     existing.rows.push({
       ticker: e.ticker,
       title: e.title,
       pnl: formatCurrency(e.pnl),
       tone: pnlTone(e.pnl) as 'win' | 'loss',
+      source: e.source,
+      type: e.type,
     });
     groups.set(key, existing);
   }
 
   const maxAbsPnl = Array.from(groups.values()).reduce((max, g) => Math.max(max, Math.abs(g.pnl)), 1);
 
-  return Array.from(groups.entries())
-    .sort((a, b) => b[1].sortKey - a[1].sortKey)
-    .slice(0, 10)
-    .map(([date, data]) => ({
-      date,
-      trades: `${data.count} trades · ${data.rows.filter((r) => r.tone === 'win').length} wins`,
-      pnl: formatCurrency(data.pnl),
-      pnlValue: data.pnl,
-      tone: pnlTone(data.pnl) as 'win' | 'loss',
-      width: `${Math.min((Math.abs(data.pnl) / maxAbsPnl) * 65 + 10, 70)}%`,
-      open: false,
-      tradeRows: data.rows.slice(0, 5),
-    }));
+  return Array.from(groups.values())
+    .sort((a, b) => b.sortKey - a.sortKey)
+    .map((data) => {
+      let subtitle = '';
+      if (range === 'Day') {
+        subtitle = `${data.count} ${data.count === 1 ? 'trade' : 'trades'} · ${data.wins} ${data.wins === 1 ? 'win' : 'wins'}${data.losses > 0 ? ` · ${data.losses} ${data.losses === 1 ? 'loss' : 'losses'}` : ''}`;
+      } else {
+        const winRate = data.count > 0 ? Math.round((data.wins / data.count) * 100) : 0;
+        subtitle = `${data.count} trades · ${data.wins} wins (${winRate}% win rate)`;
+      }
+
+      // Proportional bar width: scale visually between 14% and 85%
+      const relWidth = Math.min(Math.max((Math.abs(data.pnl) / maxAbsPnl) * 75, 14), 85);
+
+      return {
+        date: data.label,
+        trades: subtitle,
+        pnl: formatCurrency(data.pnl),
+        pnlValue: data.pnl,
+        tone: pnlTone(data.pnl) as 'win' | 'loss',
+        width: `${relWidth.toFixed(1)}%`,
+        open: false,
+        tradeRows: data.rows,
+      };
+    });
+}
+
+export function computeFilteredMetrics(
+  fnoTrades: FnoTrade[],
+  coinbaseTrades: CoinbaseTrade[],
+  _activeTrades?: ActiveTrade[],
+  allowedSources?: Set<string>,
+) {
+  const isAll = !allowedSources || allowedSources.has('ALL');
+  const includeFno = isAll || allowedSources.has('FNO');
+  const includeCoinbase = isAll || allowedSources.has('COINBASE');
+
+  let netPnl = 0;
+  let totalTrades = 0;
+  let winCount = 0;
+  let lossCount = 0;
+
+  if (includeFno) {
+    for (const t of fnoTrades) {
+      // Exclude active trades
+      const isClosed = Boolean(t.exitDate || t.returns || t.status === 'closed' || t.status === 'Closed' || t.status === 'settled' || t.status === 'Settled');
+      if (!isClosed || t.status === 'active' || t.status === 'Live') continue;
+
+      const isProfit = t.returns?.isProfit ?? ((t.returns?.value ?? 0) >= 0);
+      const raw = Math.abs(t.returns?.value ?? t.potentialReturns?.value ?? 0);
+      const pnl = isProfit ? raw : -raw;
+
+      netPnl += pnl;
+      totalTrades += 1;
+      if (pnl > 0) winCount += 1;
+      else if (pnl < 0) lossCount += 1;
+    }
+  }
+
+  if (includeCoinbase) {
+    for (const t of coinbaseTrades) {
+      // Exclude active trades
+      const isClosed = Boolean(t.exited || t.status === 'closed' || t.status === 'Exited' || t.ExitTime || t.exitPrice || t.EPrices);
+      if (!isClosed) continue;
+
+      const pnl = t.runtimePnl ?? 0;
+      netPnl += pnl;
+      totalTrades += 1;
+      if (pnl > 0) winCount += 1;
+      else if (pnl < 0) lossCount += 1;
+    }
+  }
+
+  // Active trades are not included in Analytics
+
+  const winRate = totalTrades > 0 ? Math.round((winCount / totalTrades) * 100) : 0;
+
+  return {
+    netPnl,
+    totalTrades,
+    winCount,
+    lossCount,
+    winRate,
+  };
 }

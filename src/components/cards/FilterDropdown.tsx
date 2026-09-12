@@ -30,12 +30,13 @@ export function FilterDropdown({ label, value, options, onChange }: FilterDropdo
           <ChevronDown className="h-3 w-3 opacity-60" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="min-w-[140px] border-[#2c2a24] bg-[#141310] text-[#ccd3e2]">
+      <DropdownMenuContent align="end" className="min-w-[140px] border-[#2c2a24] bg-[#141310] text-[#ccd3e2] z-50">
         {options.map((option) => (
           <DropdownMenuItem
             key={option}
+            onSelect={() => onChange(option)}
             onClick={() => onChange(option)}
-            className="flex items-center justify-between text-xs hover:bg-[#22201a] hover:text-[#ff7a3d]"
+            className="flex items-center justify-between text-xs cursor-pointer hover:bg-[#22201a] hover:text-[#ff7a3d]"
           >
             <span className={value === option ? 'font-semibold text-[#ff7a3d]' : ''}>
               {option}
